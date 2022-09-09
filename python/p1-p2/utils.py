@@ -56,7 +56,7 @@ def basic_draw(x0, y0, x1, y1, image):
             x = x0 + i
             y = m * i + y0
             y = trunc(y)
-            image.putpixel((x,y), (255))
+            # image.putpixel((x,y), (255))
         
         # finish of critical loop, delta time calculated
         time_finish = time.perf_counter()
@@ -69,120 +69,95 @@ def basic_draw(x0, y0, x1, y1, image):
 def brz_draw(x0, y0, x1, y1, image):
     
     # pre calculations
-    del_x = x1 - x0
-    del_y = y1 - y0
-    x = x0
-    y = y0
     timef = 0
+    dx = x1 - x0
+    dy = y1 - y0
+    # copy
+    d_x = dx
+    d_y = dy 
     
-    #absolute value of rate
-    dx = abs(del_x)
-    dy = abs(del_y)    
+    # slope checks
+    if dy < 0:
+        # invert dy
+        dy = -dy
+        step_y = -1
+    else:
+        step_y = 1
     
-    if del_x == 0:
-        if del_y < 0:
-        # change y0 and y1 as well
-            temp_y = y0
+    if dx < 0:
+        # invert dx
+        dx = -dx
+        step_x = -1
+    else:
+        step_x = 1
+    
+    # bit shift dy and dx
+    dy <<= 1;
+    dx <<= 1;
+    if d_x == 0:
+        # changes orientation
+        if y1 < y0:
             y0 = y1
-            y1 = temp_y
-            del_y = y1 - y0
-        # vertical lines
-        for y_count in range(del_y + 1):
-            image.putpixel((x0, y0 + y_count), (255))        
-    elif del_y == 0:
-        if del_x < 0:
-            # change y0 and y1 as well
-            temp_x = x0
+            d_y = -d_y
+        for y_range in range(d_y + 1):
+            image.putpixel((x0, y0 + y_range), (255))
+    elif d_y == 0:
+        if x1 < x0:
             x0 = x1
-            x1 = temp_x
-            del_x = x1 - x0
-        # horizontal lines
-        for x_count in range(del_x + 1):
-            image.putpixel((x0 + x_count, y0), (255))
-    elif del_y/del_x == 1:  
-        if del_x < 0:
-            # set the original x1 as x0
-            # allows for drawing from left to right consistently
-            temp_x = x0
-            x0 = x1
-            x1 = temp_x
-            del_x = x1 - x0
-            # change y0 and y1 as well
-            temp_y = y0
+            d_x = -d_x
+        for x_range in range(d_x + 1):
+            image.putpixel((x0 + x_range, y0), (255))
+    elif d_y/d_x == 1:
+        if x1 < x0:
             y0 = y1
-            y1 = temp_y
-            del_y = y1 - y0
-        for x in range(dx + 1):
-            image.putpixel((x0 + x, y0), (255))
+            x0 = x1
+            d_x = - d_x
+            d_y = - d_y
+        for x_range in range(d_x + 1):
+            image.putpixel((x0 + x_range, y0), (255))
             y0 += 1
-            
-    elif del_y/del_x == -1:
-        if del_x < 0:
-            # set the original x1 as x0
-            # allows for drawing from left to right consistently
-            temp_x = x0
-            x0 = x1
-            x1 = temp_x
-            del_x = x1 - x0
-            # change y0 and y1 as well
-            temp_y = y0
+    elif d_y/d_x == -1:
+        if x1 < x0:
             y0 = y1
-            y1 = temp_y
-            del_y = y1 - y0
-        for x in range(dx + 1):
-            image.putpixel((x0 + x, y0), (255))
-            y0 -= 1
+            x0 = x1
+            d_x = - d_x
+            d_y = - d_y
+        for x_range in range(d_x + 1):
+            image.putpixel((x0 + x_range, y0), (255))
+            y0 -= 1     
     else:
         if dx > dy:
-            pk = (2 * dy) - dx
+            fraction = dy - (dx >> 1)
             
             # critical loop
             time_start = time.perf_counter()
-            for x_count in range(dx + 1):
-                image.putpixel((x,y), (255))
-                
-                # ensures the slope is right
-                if x0 < x1:
-                    x += 1
-                else:
-                    x -= 1
-            
-                if pk < 0:
-                    pk += (2* dy)
-                else:
-                    if y0 < y1:
-                        y += 1
-                    else:
-                        y -= 1    
-                    pk += (2* dy) - (2 * dx)
+            while x0 != x1:
+                # image.putpixel((x0,y0),(255))
+                x0 += step_x
+                if fraction >= 0:
+                    y0 += step_y
+                    fraction -= dx
+                fraction += dy
             time_end = time.perf_counter()
-            return time_end - time_start
-        
+            timef = time_end - time_start
         else:
-            pk = (2 * dx) - dy
+            fraction = dx - (dy >> 1)
             
             # critical loop
             time_start = time.perf_counter()
-            for y_count in range(dy):
-                image.putpixel((x,y), (255))
-                
-                # ensures slope is right
-                if y0 < y1:
-                        y += 1
-                else:
-                        y -= 1
-                
-                if pk < 0:
-                    pk += 2 * dx
-                else:
-                    if x0 < x1:
-                        x += 1
-                    else:
-                        x -= 1
-    
-                    pk += (2 * dx) - (2 * dy)
+            while y0 != y1:
+                # image.putpixel((x0,y0),(255))
+                if fraction >= 0:
+                    x0 += step_x
+                    fraction -= dy
+                y0 += step_y
+                fraction += dx
             time_end = time.perf_counter()
-            return time_end - time_start
+            timef = time_end - time_start
+    return timef
+            
+    
+    
 
                 
     

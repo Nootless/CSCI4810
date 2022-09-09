@@ -149,7 +149,8 @@ if __name__ == '__main__':
         x1 = random.randrange(0,200,1)
         y0 = random.randrange(0,200,1)
         y1 = random.randrange(0,200,1)
-        time_total += basic_draw(x0, y0, x1, y1, image)    
+        time_total += basic_draw(x0, y0, x1, y1, image)
+        # time_total += brz_draw(x0, y0, x1, y1, image)    
     print(f'Time total: {time_total}')
     image.show()
     
