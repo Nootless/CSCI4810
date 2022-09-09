@@ -9,7 +9,7 @@ def basic_draw(x0, y0, x1, y1, image):
     del_y = y1 - y0
     timef = 0
     
-    if del_x < 0 or del_y < 0:
+    if del_x < 0:
         # set the original x1 as x0
         # allows for drawing from left to right consistently
         temp_x = x0
@@ -24,6 +24,12 @@ def basic_draw(x0, y0, x1, y1, image):
     
     
     if del_x == 0:
+        if del_y < 0:
+            # change y0 and y1 as well
+            temp_y = y0
+            y0 = y1
+            y1 = temp_y
+            del_y = y1 - y0
         # vertical lines
         for y in range(del_y + 1):
             image.putpixel((x0, y0 + y), (255))        
@@ -31,6 +37,14 @@ def basic_draw(x0, y0, x1, y1, image):
         # horizontal lines
         for x in range(del_x + 1):
             image.putpixel((x0 + x, y0), (255))
+    elif del_y/del_x == 1:
+        for x in range(del_x + 1):
+            image.putpixel((x0 + x, y0), (255))
+            y0 += 1
+    elif del_y/del_x == -1:
+        for x in range(del_x+ 1):
+            image.putpixel((x0 + x, y0), (255))
+            y0 -= 1
     else:
         # slope calculated here to prevent divide by zero error
         m = del_y / del_x
@@ -85,6 +99,39 @@ def brz_draw(x0, y0, x1, y1, image):
         # horizontal lines
         for x_count in range(del_x + 1):
             image.putpixel((x0 + x_count, y0), (255))
+    elif del_y/del_x == 1:  
+        if del_x < 0:
+            # set the original x1 as x0
+            # allows for drawing from left to right consistently
+            temp_x = x0
+            x0 = x1
+            x1 = temp_x
+            del_x = x1 - x0
+            # change y0 and y1 as well
+            temp_y = y0
+            y0 = y1
+            y1 = temp_y
+            del_y = y1 - y0
+        for x in range(dx + 1):
+            image.putpixel((x0 + x, y0), (255))
+            y0 += 1
+            
+    elif del_y/del_x == -1:
+        if del_x < 0:
+            # set the original x1 as x0
+            # allows for drawing from left to right consistently
+            temp_x = x0
+            x0 = x1
+            x1 = temp_x
+            del_x = x1 - x0
+            # change y0 and y1 as well
+            temp_y = y0
+            y0 = y1
+            y1 = temp_y
+            del_y = y1 - y0
+        for x in range(dx + 1):
+            image.putpixel((x0 + x, y0), (255))
+            y0 -= 1
     else:
         if dx > dy:
             pk = (2 * dy) - dx

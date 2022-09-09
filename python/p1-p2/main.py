@@ -3,14 +3,144 @@ from tkinter import Tk
 from utils import basic_draw, brz_draw
 import random
 
+def test_basic(image):
+    
+    # Horizontal Line Test Case
+    basic_draw(0, 150, 100, 150, image)
+    image.show()
+    # Vertical Line Test Case
+    basic_draw(100, 0, 100, 150, image)
+    image.show()
+    
+    ## Positive Slope Test Case ##
+    # Slope greater than 1
+    basic_draw(25, 0, 50, 50, image)
+    image.show()
+    # Slope equal to 1
+    basic_draw(50, 0, 100, 50, image)
+    image.show()
+    # Slope less than 1
+    basic_draw(100, 0, 150, 25, image)
+    image.show()
+    
+    ## Negative Slope Test Case ##
+    
+    # Slope greater than -1
+    basic_draw(25, 50, 50, 0, image)
+    image.show()
+    # Slope equal to -1
+    basic_draw(50, 50, 100, 0, image)
+    image.show()
+    # Slope less than -1
+    basic_draw(100, 25, 150, 0, image)
+    image.show()
+    
+    ### Backwards X ###
+    
+    # Horizontal Line Test Case
+    basic_draw(100, 100, 0, 100, image)
+    image.show()
+    # Vertical Line Test Case
+    basic_draw(150, 150, 150, 0, image)
+    image.show()
+    
+    ## Positive Slope ##
+    
+    # Slope greater than 1
+    basic_draw(50, 100, 25, 50, image)
+    image.show()
+    # Slope equal to 1
+    basic_draw(100, 100, 50, 50, image)
+    image.show()
+    # Slope less than 1
+    basic_draw(150, 50, 100, 25, image)
+    image.show()
+    
+    ## Negative slope ##
+    
+    # Slope greater than -1
+    basic_draw(50, 50, 25, 100, image)
+    image.show()
+    # Slope equal to 1
+    basic_draw(100, 50, 50, 100, image)
+    image.show()
+    # Slope less than 1
+    basic_draw(150, 25, 100, 50, image)
+    image.show()
+    
+def test_brz(image):
+    
+    # Horizontal Line Test Case
+    brz_draw(0, 150, 100, 150, image)
+    image.show()
+    # Vertical Line Test Case
+    brz_draw(100, 0, 100, 150, image)
+    image.show()
+    
+    ## Positive Slope Test Case ##
+    # Slope greater than 1
+    brz_draw(25, 0, 50, 50, image)
+    image.show()
+    # Slope equal to 1
+    brz_draw(50, 0, 100, 50, image)
+    image.show()
+    # Slope less than 1
+    brz_draw(100, 0, 150, 25, image)
+    image.show()
+    
+    ## Negative Slope Test Case ##
+    
+    # Slope greater than -1
+    brz_draw(25, 50, 50, 0, image)
+    image.show()
+    # Slope equal to -1
+    brz_draw(50, 50, 100, 0, image)
+    image.show()
+    # Slope less than -1
+    brz_draw(100, 25, 150, 0, image)
+    image.show()
+    
+    ### Backwards X ###
+    
+    # Horizontal Line Test Case
+    brz_draw(100, 100, 0, 100, image)
+    image.show()
+    # Vertical Line Test Case
+    brz_draw(150, 150, 150, 0, image)
+    image.show()
+    
+    ## Positive Slope ##
+    
+    # Slope greater than 1
+    brz_draw(50, 100, 25, 50, image)
+    image.show()
+    # Slope equal to 1
+    brz_draw(100, 100, 50, 50, image)
+    image.show()
+    # Slope less than 1
+    brz_draw(150, 50, 100, 25, image)
+    image.show()
+    
+    ## Negative slope ##
+    
+    # Slope greater than -1
+    brz_draw(50, 50, 25, 100, image)
+    image.show()
+    # Slope equal to 1
+    brz_draw(100, 50, 50, 100, image)
+    image.show()
+    # Slope less than 1
+    brz_draw(150, 25, 100, 50, image)
+    image.show()
+
+    
 if __name__ == '__main__':
     lines = int(input('How Many Lines? (Integers only):'))
     image = Image.new('L',(200,200))
-
-    # Horizontal Line Test Case
-    # Vertical Line Test Case
-    # Positive Slope Test Case
-    # Negative Slope Test Case
+         
+    # run for test
+    # test_basic(image)
+    # test_brz(image)
     
     time_total = 0
     for x in range(lines):
@@ -19,11 +149,7 @@ if __name__ == '__main__':
         x1 = random.randrange(0,200,1)
         y0 = random.randrange(0,200,1)
         y1 = random.randrange(0,200,1)
-        time_total += brz_draw(10, 100, 100, 50, image)
-        
+        time_total += basic_draw(x0, y0, x1, y1, image)    
     print(f'Time total: {time_total}')
-    # rotated and flipped as python image starts its axis from top left
-    image = image.rotate(180)
-    image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
     image.show()
     
