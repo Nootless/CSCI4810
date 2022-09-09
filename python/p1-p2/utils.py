@@ -56,7 +56,7 @@ def basic_draw(x0, y0, x1, y1, image):
             x = x0 + i
             y = m * i + y0
             y = trunc(y)
-            # image.putpixel((x,y), (255))
+            image.putpixel((x,y), (255))
         
         # finish of critical loop, delta time calculated
         time_finish = time.perf_counter()
@@ -64,8 +64,8 @@ def basic_draw(x0, y0, x1, y1, image):
     return timef
 
 # bresenham algorithm from notes in class
-# code from iq open genius
-# https://iq.opengenus.org/bresenham-line-drawining-algorithm/
+# https://csustan.csustan.edu/~tom/Lecture-Notes/Graphics/Bresenham-Line/Bresenham-Line.pdf
+# Bresenham algorithm from California State University
 def brz_draw(x0, y0, x1, y1, image):
     
     # pre calculations
@@ -132,7 +132,7 @@ def brz_draw(x0, y0, x1, y1, image):
             # critical loop
             time_start = time.perf_counter()
             while x0 != x1:
-                # image.putpixel((x0,y0),(255))
+                image.putpixel((x0,y0),(255))
                 x0 += step_x
                 if fraction >= 0:
                     y0 += step_y
@@ -146,7 +146,7 @@ def brz_draw(x0, y0, x1, y1, image):
             # critical loop
             time_start = time.perf_counter()
             while y0 != y1:
-                # image.putpixel((x0,y0),(255))
+                image.putpixel((x0,y0),(255))
                 if fraction >= 0:
                     x0 += step_x
                     fraction -= dy

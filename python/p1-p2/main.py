@@ -1,5 +1,4 @@
 from PIL import Image
-from tkinter import Tk
 from utils import basic_draw, brz_draw
 import random
 
@@ -133,6 +132,34 @@ def test_brz(image):
     brz_draw(150, 25, 100, 50, image)
     image.show()
 
+def user_input_test(lines,image):
+    time_total = 0
+    for x in range(lines):
+        # random number generation
+        x0 = random.randrange(0,200,1)
+        x1 = random.randrange(0,200,1)
+        y0 = random.randrange(0,200,1)
+        y1 = random.randrange(0,200,1)
+        # time_total += basic_draw(x0, y0, x1, y1, image)
+        time_total += brz_draw(x0, y0, x1, y1, image)    
+    print(f'Time total: {time_total}')
+    image.show()
+    
+def test_line_count_long(lines, image):
+    time_total_basic = 0
+    time_total_brz = 0
+    for x in range(lines):
+        time_total_basic += basic_draw(0,0,25,25,image)
+        time_total_brz += brz_draw(0,0,25,25,image)
+    print(f'Time total basic: {time_total_basic}\nTime total brz: {time_total_brz}')
+        
+def test_line_count_short(lines, image):
+    time_total_basic = 0
+    time_total_brz = 0
+    for x in range(lines):
+        time_total_basic += basic_draw(0,0,100,100,image)
+        time_total_brz += brz_draw(0,0,100,100,image)
+    print(f'Time total basic: {time_total_basic}\nTime total brz: {time_total_brz}')
     
 if __name__ == '__main__':
     lines = int(input('How Many Lines? (Integers only):'))
@@ -141,16 +168,9 @@ if __name__ == '__main__':
     # run for test
     # test_basic(image)
     # test_brz(image)
+    # test_line_count_long(lines,image)
+    # test_line_count_short(lines,image)
     
-    time_total = 0
-    for x in range(lines):
-        # random number generation
-        x0 = random.randrange(0,200,1)
-        x1 = random.randrange(0,200,1)
-        y0 = random.randrange(0,200,1)
-        y1 = random.randrange(0,200,1)
-        time_total += basic_draw(x0, y0, x1, y1, image)
-        # time_total += brz_draw(x0, y0, x1, y1, image)    
-    print(f'Time total: {time_total}')
-    image.show()
+    # user input
+    user_input_test(lines,image)
     
