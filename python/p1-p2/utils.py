@@ -41,11 +41,34 @@ def basic_draw(x0, y0, x1, y1, image):
             image.putpixel((x0 + x, y0), (255))
             y0 += 1
     elif del_y/del_x == -1:
-        for x in range(del_x+ 1):
+        for x in range(del_x + 1):
             image.putpixel((x0 + x, y0), (255))
             y0 -= 1
+    elif abs(del_y/del_x) > 1:
+        if del_y < 0:
+            # change y0 and y1 for consistent drawing
+            temp_y = y0
+            y0 = y1
+            y1 = temp_y
+            del_y = y1 - y0
+            # change slope values
+            temp_x = x0
+            x0 = x1
+            x1 = temp_x
+            del_x = x1 - x0
+        # slope calc
+        m = del_y/del_x
+        time_start = time.perf_counter()
+        # critical loop
+        for i in range (del_y + 1):
+            x = 1/m * i + x0 # calculate x point from slope and initial
+            y = y0 + i # shift over 
+            x = trunc(x) # truncate to work on int point system
+            image.putpixel((x,y), (255))
+        time_finish = time.perf_counter()
+        timef = time_finish - time_start
     else:
-        # slope calculated here to prevent divide by zero error
+        # slope calc
         m = del_y / del_x
         # timer start
         time_start = time.perf_counter()
