@@ -117,4 +117,3 @@ def draw(x0, y0, x1, y1, image):
             time_end = time.perf_counter()
             timef = time_end - time_start
     return timef
-            
