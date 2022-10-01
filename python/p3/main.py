@@ -5,8 +5,9 @@ import utils
 import numpy
 
 # global declares
-global lines_array
+global lines_array 
 global transforms 
+lines_array= [[]]
 transforms = numpy.array([[1, 0, 0],[0, 1, 0], [0, 0, 1]])
 
 # create App
@@ -29,13 +30,16 @@ def import_file():
 def export_file():
     numpy.savetxt(f'{output_entry.get()}.csv',lines_array,delimiter=',')
 
+# does basic translate function without adding it to the transform
 def basic_translate(original, t_x,t_y):
-    global lines_array
-    global transforms 
+    print(t_x,t_y)
+    t_x = float(t_x)
+    t_y = float(t_y)
     trans_matrix = numpy.array([[1, 0, 0],[0, 1, 0],[t_x,t_y, 1]])
-    trans_matrix = trans_matrix.astype(float)
+
     return numpy.matmul(original,trans_matrix)
 
+# Translate function used 
 def translate_func():
     global lines_array
     global transforms 
@@ -47,22 +51,70 @@ def translate_func():
     if len(translate_y_entry.get()) != 0:
         y_trans = translate_y_entry.get()
 
-    # multiply and add transforms to transform matrix
-    trans_matrix = numpy.array([[1, 0, 0],[0, 1, 0],[translate_x_entry.get(),translate_y_entry.get(), 1]])
-    trans_matrix = trans_matrix.astype(float)
-    
     # print(transforms)
     # print(trans_matrix)
     # transforms and updates user
-    transforms = basic_translate(transforms,translate_x_entry.get(),translate_y_entry.get())
+    transforms = basic_translate(transforms,x_trans,y_trans)
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
     print('translate')
 
+def basic_scale(original,r_x,r_y):
+    trans_matrix = numpy.array([[r_x,0,0],[0,r_y,0],[0,0,1]])
+    trans_matrix = trans_matrix.astype(float)
+    return numpy.matmul(original,trans_matrix)
+
 def basic_scale_func():
+    # initializing
+    global lines_array
+    global transforms
+    x_rot = 0
+    y_rot = 0
+
+    if len(scale_x_entry.get()) != 0:
+        x_rot = scale_x_entry.get()
+    if len(scale_y_entry.get()) != 0:
+        y_rot = scale_y_entry.get()
+
+    # Add transformation back to general and show in table
+    transforms = basic_scale(transforms,x_rot,y_rot)
+    transform_text_box.delete('1.0','end')
+    transform_text_box.insert(END,transforms)
     print('basic scale')
 
 def scale_func():
+    # initializing
+    global lines_array
+    global transforms
+    x_rot = 0
+    y_rot = 0
+    cx = 0
+    cy = 0
+
+    # ensuring no empty entry
+    # converted to floats to ensure no undefined behavior
+    if len(scale_x_entry.get()) != 0:
+        x_rot = float(scale_x_entry.get())
+    if len(scale_y_entry.get()) != 0:
+        y_rot = float(scale_y_entry.get())
+    if len(scale_cx_entry.get()) != 0:
+        cx = float(scale_cx_entry.get())
+    if len(scale_cy_entry.get()) != 0:
+        cy = float(scale_cy_entry.get())
+    
+    # adds negative for subtraction, prevents -0
+    ncx = -1 * cx
+    ncy = -1 * cy
+
+    # translate to center, rotate, the return back to original
+    transforms = basic_translate(transforms,ncx,ncy)
+    transforms = basic_scale(transforms,x_rot,y_rot)
+    transforms = basic_translate(transforms,cx,cy)
+
+    # Add transformation back to table
+    transform_text_box.delete('1.0','end')
+    transform_text_box.insert(END,transforms)
+
     print('scale')
 
 def basic_rotate_func():
@@ -107,25 +159,25 @@ if __name__ == '__main__':
     output_entry.grid(row=0, column=2)
     
     # translate X and Y
-    x_text = StringVar()
-    y_text = StringVar()
+    translate_x = StringVar()
+    translate_y = StringVar()
     translate_label = Label(app,text='Translate (X,Y)', font=('bold', 12), pady=20)
     translate_label.grid(row=2,column=0,sticky=W)
-    translate_x_entry = Entry(app, textvariable=x_text)
+    translate_x_entry = Entry(app, textvariable=translate_x)
     translate_x_entry.grid(row=2, column=1)
-    translate_y_entry = Entry(app, textvariable=y_text)
+    translate_y_entry = Entry(app, textvariable=translate_y)
     translate_y_entry.grid(row=2, column=2)
     
     #  Basic Scale and Scale
-    trans_x = StringVar()
-    trans_y = StringVar()
+    scale_x = StringVar()
+    scale_y = StringVar()
     center_x = StringVar()
     center_y = StringVar()
     scale_label = Label(app,text='Scale (X,Y)', font=('bold', 12), pady=20)
     scale_label.grid(row=3,column=0,sticky=W)
-    scale_x_entry = Entry(app, textvariable=trans_x)
+    scale_x_entry = Entry(app, textvariable=scale_x)
     scale_x_entry.grid(row=3, column=1)
-    scale_y_entry = Entry(app, textvariable=trans_y)
+    scale_y_entry = Entry(app, textvariable=scale_y)
     scale_y_entry.grid(row=3, column=2)
     
     scale_label = Label(app,text='Scale (X,Y)', font=('bold', 12), pady=20)
