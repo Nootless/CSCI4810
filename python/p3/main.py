@@ -52,16 +52,16 @@ def translate_func():
 def basic_scale_func():
     # initializing
     global transforms
-    x_rot = 0
-    y_rot = 0
+    x_scl = 1
+    y_scl = 1
 
     if len(scale_x_entry.get()) != 0:
-        x_rot = scale_x_entry.get()
+        x_scl = scale_x_entry.get()
     if len(scale_y_entry.get()) != 0:
-        y_rot = scale_y_entry.get()
+        y_scl = scale_y_entry.get()
 
     # Add transformation back to general and show in table
-    transforms = basic_scale(transforms,x_rot,y_rot)
+    transforms = basic_scale(transforms,x_scl,y_scl)
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
     print('basic scale')
@@ -69,8 +69,8 @@ def basic_scale_func():
 def scale_func():
     # initializing
     global transforms
-    x_scl = 0
-    y_scl = 0
+    x_scl = 1
+    y_scl = 1
     cx = 0
     cy = 0
 
@@ -115,9 +115,8 @@ def basic_rotate_func():
 def rotate_func():
     global transforms
     theta = 0
-    x_rot = 0
-    y_rot = 0
-
+    cx_rot = 0
+    cy_rot = 0
     # in case of empty lengths
     if len(rotate_entry.get()) != 0:
         theta = float(rotate_entry.get())
@@ -150,9 +149,28 @@ def insert_line():
 def apply_transform():
     global lines_array
     global transforms
-    
+    temp_array = numpy.empty([1,4])
+    # apply transform to lines
     for line in lines_array:
-        lines_array[line] = numpy.matmul(lines_array[line],transforms)
+        origin_cord = [line[0],line[1],1]
+        final_cord = [line[2],line[3],1]
+        origin_cord = numpy.matmul(origin_cord,transforms)
+        final_cord = numpy.matmul(final_cord,transforms)
+
+        final_array = numpy.array([[origin_cord[0],origin_cord[1],final_cord[0],final_cord[1]]])
+        temp_array = numpy.concatenate([temp_array,final_array])
+    
+    temp_array = numpy.delete(temp_array,0,axis=0)
+    # remove initial empty
+    lines_array = temp_array
+    
+    # display as int for brevity
+    temp_array = temp_array.astype(int)
+    temp_array
+    text_box.delete('1.0','end')
+    text_box.insert(END,temp_array)
+    text_box_info.delete('1.0','end')
+    text_box_info.insert(END,f'Length:{len(lines_array)}')
     
 def display_image():
     global lines_array
@@ -177,24 +195,6 @@ if __name__ == '__main__':
     app = Tk()
     app.title('Transmongus')
     app.geometry('1000x800')
-    
-    # add data files inputs
-
-    input_x0 = StringVar()
-    input_x1 = StringVar()
-    input_y0 = StringVar()
-    input_y1 = StringVar()
-    
-    input_label = Label(app, text='Lines')
-    input_label.grid(row=9,column=0)
-    input_x0_box = Entry(app, textvariable=input_x0)
-    input_x0_box.grid(row=9,column=1, sticky=W)
-    input_y0_box = Entry(app, textvariable=input_y0)
-    input_y0_box.grid(row=9,column=2, sticky=W)
-    input_x1_box = Entry(app, textvariable=input_x1)
-    input_x1_box.grid(row=9,column=3,sticky=W)
-    input_y1_box = Entry(app, textvariable=input_y1)
-    input_y1_box.grid(row=9,column=4,sticky=W)
     
     # output file
     output_text = StringVar()
@@ -284,10 +284,6 @@ if __name__ == '__main__':
     rotate_button = Button(app,text='Rotate',command=rotate_func)
     rotate_button.grid(row=6,column=3)
 
-    # Display Image
-    display_button = Button(app,text='Display', command=display_image)
-    display_button.grid(row=11,column=4)
-
     # insert 
     insert_button = Button(app,text='Insert Line',command=insert_line)
     insert_button.grid(row=9,column=5)
@@ -296,7 +292,27 @@ if __name__ == '__main__':
     transform_button = Button(app,text='Apply Transform',command=apply_transform)
     transform_button.grid(row=9,column=6)
     
+    # add data files inputs
 
+    input_x0 = StringVar()
+    input_x1 = StringVar()
+    input_y0 = StringVar()
+    input_y1 = StringVar()
+    
+    input_label = Label(app, text='Lines')
+    input_label.grid(row=9,column=0)
+    input_x0_box = Entry(app, textvariable=input_x0)
+    input_x0_box.grid(row=9,column=1, sticky=W)
+    input_y0_box = Entry(app, textvariable=input_y0)
+    input_y0_box.grid(row=9,column=2, sticky=W)
+    input_x1_box = Entry(app, textvariable=input_x1)
+    input_x1_box.grid(row=9,column=3,sticky=W)
+    input_y1_box = Entry(app, textvariable=input_y1)
+    input_y1_box.grid(row=9,column=4,sticky=W)
+    
+    # Display Image
+    display_button = Button(app,text='Display', command=display_image)
+    display_button.grid(row=11,column=4)
 
     app.mainloop()
     
