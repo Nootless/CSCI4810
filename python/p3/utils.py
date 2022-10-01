@@ -1,5 +1,6 @@
 from math import trunc
 import time
+import numpy
 
 # bresenham algorithm from notes in class
 # https://csustan.csustan.edu/~tom/Lecture-Notes/Graphics/Bresenham-Line/Bresenham-Line.pdf
