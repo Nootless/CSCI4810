@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import Image
-import utils
 import numpy
+from utils import *
 
 # global declares
 global lines_array 
 global transforms 
-lines_array= [[]]
+lines_array = []
 transforms = numpy.array([[1, 0, 0],[0, 1, 0], [0, 0, 1]])
 
 # create App
@@ -19,29 +19,18 @@ def import_file():
     filename = filedialog.askopenfilename()
     # check for no input
     if(len(filename) != 0):
-        lines_array = numpy.genfromtxt(f'{filename}',delimiter=',')
+        lines_array = numpy.loadtxt(filename,delimiter=',')
         # textbox update
         text_box.delete('1.0','end')
         text_box.insert(END,lines_array)
         text_box_info.delete('1.0','end')
         text_box_info.insert(END,f'Length:{len(lines_array)}')
 
-
 def export_file():
     numpy.savetxt(f'{output_entry.get()}.csv',lines_array,delimiter=',')
 
-# does basic translate function without adding it to the transform
-def basic_translate(original, t_x,t_y):
-    print(t_x,t_y)
-    t_x = float(t_x)
-    t_y = float(t_y)
-    trans_matrix = numpy.array([[1, 0, 0],[0, 1, 0],[t_x,t_y, 1]])
-
-    return numpy.matmul(original,trans_matrix)
-
 # Translate function used 
 def translate_func():
-    global lines_array
     global transforms 
     x_trans = 0
     y_trans = 0
@@ -59,14 +48,9 @@ def translate_func():
     transform_text_box.insert(END,transforms)
     print('translate')
 
-def basic_scale(original,r_x,r_y):
-    trans_matrix = numpy.array([[r_x,0,0],[0,r_y,0],[0,0,1]])
-    trans_matrix = trans_matrix.astype(float)
-    return numpy.matmul(original,trans_matrix)
 
 def basic_scale_func():
     # initializing
-    global lines_array
     global transforms
     x_rot = 0
     y_rot = 0
@@ -84,31 +68,27 @@ def basic_scale_func():
 
 def scale_func():
     # initializing
-    global lines_array
     global transforms
-    x_rot = 0
-    y_rot = 0
+    x_scl = 0
+    y_scl = 0
     cx = 0
     cy = 0
 
     # ensuring no empty entry
     # converted to floats to ensure no undefined behavior
     if len(scale_x_entry.get()) != 0:
-        x_rot = float(scale_x_entry.get())
+        x_scl = float(scale_x_entry.get())
     if len(scale_y_entry.get()) != 0:
-        y_rot = float(scale_y_entry.get())
+        y_scl = float(scale_y_entry.get())
     if len(scale_cx_entry.get()) != 0:
         cx = float(scale_cx_entry.get())
     if len(scale_cy_entry.get()) != 0:
         cy = float(scale_cy_entry.get())
-    
-    # adds negative for subtraction, prevents -0
-    ncx = -1 * cx
-    ncy = -1 * cy
+
 
     # translate to center, rotate, the return back to original
-    transforms = basic_translate(transforms,ncx,ncy)
-    transforms = basic_scale(transforms,x_rot,y_rot)
+    transforms = basic_translate(transforms,-1 * cx,-1 * cy)
+    transforms = basic_scale(transforms,x_scl,y_scl)
     transforms = basic_translate(transforms,cx,cy)
 
     # Add transformation back to table
@@ -118,19 +98,82 @@ def scale_func():
     print('scale')
 
 def basic_rotate_func():
+    # initialization
+    global transforms
+    theta = 0
+    # in case of empty lengths
+    if len(rotate_entry.get()) != 0:
+        theta = float(rotate_entry.get())
+    
+    # perform transforms to matrix and display
+    transforms = basic_rot(transforms,theta)
+    transform_text_box.delete('1.0','end')
+    transform_text_box.insert(END,transforms)
     print('basic rotate')
-
-def rotate_func():
-    print('rotate')
-
-def display_image():
-    print('display')
-
-def insert_line():
-    print('insert Line')
-if __name__ == '__main__':
     
 
+def rotate_func():
+    global transforms
+    theta = 0
+    x_rot = 0
+    y_rot = 0
+
+    # in case of empty lengths
+    if len(rotate_entry.get()) != 0:
+        theta = float(rotate_entry.get())
+    if len(rotate_cx_entry.get()) != 0:
+        cx_rot = float(rotate_cx_entry.get())
+    if len(rotate_cy_entry.get()) != 0:
+        cy_rot = float(rotate_cy_entry.get())
+    
+    # perform transforms to matrix and display
+    transforms = basic_translate(transforms,-1*cx_rot,-1*cy_rot)
+    transforms = basic_rot(transforms,theta)
+    transforms = basic_translate(transforms,cx_rot,cy_rot)
+
+    transform_text_box.delete('1.0','end')
+    transform_text_box.insert(END,transforms)
+
+    print('rotate')
+
+def insert_line():
+    global lines_array
+    # combines new lines with a given input
+    new_line = numpy.array([[float(input_x0_box.get()),float(input_y0_box.get()),
+                        float(input_x1_box.get()),float(input_y1_box.get())]])
+    lines_array = numpy.concatenate((lines_array,new_line))
+    text_box.delete('1.0','end')
+    text_box.insert(END,lines_array)
+    text_box_info.delete('1.0','end')
+    text_box_info.insert(END,f'Length:{len(lines_array)}')
+
+def apply_transform():
+    global lines_array
+    global transforms
+    
+    for line in lines_array:
+        lines_array[line] = numpy.matmul(lines_array[line],transforms)
+    
+def display_image():
+    global lines_array
+    # Image window
+    img=Image.new('L',(700,700))
+
+    # create image
+    for cord in lines_array:
+        x0 = int(cord[0])
+        y0 = int(cord[1])
+        x1 = int(cord[2])
+        y1 = int(cord[3])
+        draw(x0,y0,x1,y1,img)
+    # Display image
+    img.show()
+    
+    print('display')
+
+
+    print('insert Line')
+if __name__ == '__main__':
     app = Tk()
     app.title('Transmongus')
     app.geometry('1000x800')
@@ -248,6 +291,12 @@ if __name__ == '__main__':
     # insert 
     insert_button = Button(app,text='Insert Line',command=insert_line)
     insert_button.grid(row=9,column=5)
+
+    # Transform
+    transform_button = Button(app,text='Apply Transform',command=apply_transform)
+    transform_button.grid(row=9,column=6)
+    
+
 
     app.mainloop()
     
