@@ -131,7 +131,8 @@ def basic_translate(original, t_x,t_y):
 
 def basic_rot(original, theta):
     theta = float(theta)
-    trans_matrix = numpy.array([[numpy.cos(theta),numpy.sin(-(theta)), 0],[numpy.sin(theta),numpy.cos(theta),0],[0,0,1]])
+    trans_matrix = numpy.array([[numpy.cos(numpy.radians(theta)),numpy.sin(-(numpy.radians(theta))), 0],
+                                [numpy.sin(numpy.radians(theta)),numpy.cos(numpy.radians(theta)),0],[0,0,1]])
     return numpy.matmul(original,trans_matrix)
 
 def basic_scale(original,r_x,r_y):

@@ -26,6 +26,7 @@ def import_file():
         text_box_info.delete('1.0','end')
         text_box_info.insert(END,f'Length:{len(lines_array)}')
 
+# exports files
 def export_file():
     numpy.savetxt(f'{output_entry.get()}.csv',lines_array,delimiter=',')
 
@@ -55,6 +56,7 @@ def basic_scale_func():
     x_scl = 1
     y_scl = 1
 
+    # empty checks
     if len(scale_x_entry.get()) != 0:
         x_scl = scale_x_entry.get()
     if len(scale_y_entry.get()) != 0:
@@ -107,6 +109,7 @@ def basic_rotate_func():
     
     # perform transforms to matrix and display
     transforms = basic_rot(transforms,theta)
+    print(transforms)
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
     print('basic rotate')
@@ -150,13 +153,13 @@ def apply_transform():
     global lines_array
     global transforms
     temp_array = numpy.empty([1,4])
-    # apply transform to lines
+    # apply transform to stored lines
     for line in lines_array:
         origin_cord = [line[0],line[1],1]
         final_cord = [line[2],line[3],1]
+
         origin_cord = numpy.matmul(origin_cord,transforms)
         final_cord = numpy.matmul(final_cord,transforms)
-
         final_array = numpy.array([[origin_cord[0],origin_cord[1],final_cord[0],final_cord[1]]])
         temp_array = numpy.concatenate([temp_array,final_array])
     
@@ -189,9 +192,8 @@ def display_image():
     
     print('display')
 
-
-    print('insert Line')
 if __name__ == '__main__':
+    # App Init
     app = Tk()
     app.title('Transmongus')
     app.geometry('1000x800')
@@ -201,6 +203,7 @@ if __name__ == '__main__':
     output_entry = Entry(app, textvariable=output_text)
     output_entry.grid(row=0, column=2)
     
+    # Buttons and Boxes
     # translate X and Y
     translate_x = StringVar()
     translate_y = StringVar()
@@ -293,7 +296,6 @@ if __name__ == '__main__':
     transform_button.grid(row=9,column=6)
     
     # add data files inputs
-
     input_x0 = StringVar()
     input_x1 = StringVar()
     input_y0 = StringVar()
@@ -314,6 +316,7 @@ if __name__ == '__main__':
     display_button = Button(app,text='Display', command=display_image)
     display_button.grid(row=11,column=4)
 
+    # Run App
     app.mainloop()
     
 
