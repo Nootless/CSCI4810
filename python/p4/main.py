@@ -203,12 +203,9 @@ def apply_transform():
     temp_array = numpy.empty([1,4])
     # apply transform to stored lines
     for line in lines_array:
-        origin_cord = [line[0],line[1],1]
-        final_cord = [line[2],line[3],1]
-
+        origin_cord = [line[0],line[1],line[2],1]
         origin_cord = numpy.matmul(origin_cord,transforms)
-        final_cord = numpy.matmul(final_cord,transforms)
-        final_array = numpy.array([[origin_cord[0],origin_cord[1],final_cord[0],final_cord[1]]])
+        final_array = numpy.array([[origin_cord[0],origin_cord[1],origin_cord[2],line[3]]])
         temp_array = numpy.concatenate([temp_array,final_array])
     
     temp_array = numpy.delete(temp_array,0,axis=0)
@@ -239,6 +236,9 @@ def display_image():
     img.show()
     
     print('display')
+
+def display3d_image():
+    return NotImplementedError()
 
 if __name__ == '__main__':
     # App Init

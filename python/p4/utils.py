@@ -150,7 +150,7 @@ def basic_trans3(original, t_x, t_y, t_z):
     return numpy.matmul(original, trans_matrix)
 
 def basic_scale3(original,sx,sy,sz):
-    trans_matrix = numpy.array([sx,0,0,0],[0,sy,0,0],[0,0,sz,0],[0,0,0,1])
+    trans_matrix = numpy.array([[sx,0,0,0],[0,sy,0,0],[0,0,sz,0],[0,0,0,1]])
     trans_matrix = trans_matrix.astype(float)
 
     return numpy.matmul(original,trans_matrix)
