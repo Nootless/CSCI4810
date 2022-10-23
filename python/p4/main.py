@@ -1,11 +1,26 @@
-import tkinter
+from tkinter import *
+from tkinter import filedialog
+from PIL import Image
+from utils import *
 import numpy
 
 # global declares
 global lines_array 
 global transforms 
 lines_array = []
-transforms = numpy.array([[1, 0, 0,0],[0, 1, 0, 0], [0, 0, 1, 0],[0, 0, 0, 1]])
+transforms = numpy.array([[1, 0, 0, 0],[0, 1, 0, 0], [0, 0, 1, 0],[0, 0, 0, 1]])
+
+# Constants
+N = 1000
+
+# Viewport
+vp = [6,8,7.5]
+# Viewing Axis
+Z = 7.5
+# screen size
+S = 15
+# screen distance
+D = 60
 
 # create App
 # comes from https://www.youtube.com/watch?v=ELkaEpN29PU
@@ -44,7 +59,7 @@ def translate_func():
     # print(transforms)
     # print(trans_matrix)
     # transforms and updates user
-    transforms = basic_translate(transforms,x_trans,y_trans)
+    transforms = basic_trans3(transforms,x_trans,y_trans,z_trans)
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
     print('translate')
@@ -55,15 +70,18 @@ def basic_scale_func():
     global transforms
     x_scl = 1
     y_scl = 1
+    z_scl = 1
 
     # empty checks
     if len(scale_x_entry.get()) != 0:
         x_scl = scale_x_entry.get()
     if len(scale_y_entry.get()) != 0:
         y_scl = scale_y_entry.get()
+    if len(scale_z_entry.get()) != 0:
+        z_scl = scale_z_entry.get()
 
     # Add transformation back to general and show in table
-    transforms = basic_scale(transforms,x_scl,y_scl)
+    transforms = basic_scale3(transforms,x_scl,y_scl,z_scl)
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
     print('basic scale')
@@ -73,8 +91,10 @@ def scale_func():
     global transforms
     x_scl = 1
     y_scl = 1
+    z_scl = 1
     cx = 0
     cy = 0
+    cz = 0
 
     # ensuring no empty entry
     # converted to floats to ensure no undefined behavior
@@ -82,16 +102,21 @@ def scale_func():
         x_scl = float(scale_x_entry.get())
     if len(scale_y_entry.get()) != 0:
         y_scl = float(scale_y_entry.get())
+    if len(scale_z_entry.get()) != 0:
+        z_scl = float(scale_z_entry.get())
+
     if len(scale_cx_entry.get()) != 0:
         cx = float(scale_cx_entry.get())
     if len(scale_cy_entry.get()) != 0:
         cy = float(scale_cy_entry.get())
+    if len(scale_cz_entry.get()) != 0:
+        cz = float(scale_cz_entry.get())
 
 
     # translate to center, rotate, the return back to original
-    transforms = basic_translate(transforms,-1 * cx,-1 * cy)
-    transforms = basic_scale(transforms,x_scl,y_scl)
-    transforms = basic_translate(transforms,cx,cy)
+    transforms = basic_trans3(transforms,-cx,-cy,-cz)
+    transforms = basic_scale3(transforms, x_scl, y_scl, z_scl)
+    transforms = basic_trans3(transforms,cx,cy,cz)
 
     # Add transformation back to table
     transform_text_box.delete('1.0','end')
@@ -99,27 +124,50 @@ def scale_func():
 
     print('scale')
 
-def basic_rotate_func():
-    # initialization
+def rotate_x_func():
     global transforms
     theta = 0
+
+    # in case of empty lengths
+    if len(rotate_entry.get()) != 0:
+        theta = float(rotate_entry.get())
+
+    transforms = basic_rotate3x(transforms, theta)
+
+    transform_text_box.delete('1.0','end')
+    transform_text_box.insert(END,transforms)
+
+def rotate_y_func():
+    global transforms
+    theta = 0
+
     # in case of empty lengths
     if len(rotate_entry.get()) != 0:
         theta = float(rotate_entry.get())
     
-    # perform transforms to matrix and display
-    transforms = basic_rot(transforms,theta)
-    print(transforms)
+    transforms = basic_rotate3y(transforms, theta)
+    
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
-    print('basic rotate')
+
+def rotate_z_func():
+    global transforms
+    theta = 0
     
+    # in case of empty lengths
+    if len(rotate_entry.get()) != 0:
+        theta = float(rotate_entry.get())
+        
+    transforms = basic_rotate3z(transforms, theta)
+
+    transform_text_box.delete('1.0','end')
+    transform_text_box.insert(END,transforms)
 
 def rotate_func():
     global transforms
-    theta = 0
     cx_rot = 0
     cy_rot = 0
+    theta = 0
     # in case of empty lengths
     if len(rotate_entry.get()) != 0:
         theta = float(rotate_entry.get())
@@ -142,7 +190,7 @@ def insert_line():
     global lines_array
     # combines new lines with a given input
     new_line = numpy.array([[float(input_x0_box.get()),float(input_y0_box.get()),
-                        float(input_x1_box.get()),float(input_y1_box.get())]])
+                             float(input_z0_box.get()),float(input_index.get())]])
     lines_array = numpy.concatenate((lines_array,new_line))
     text_box.delete('1.0','end')
     text_box.insert(END,lines_array)
@@ -207,24 +255,31 @@ if __name__ == '__main__':
     # translate X and Y
     translate_x = StringVar()
     translate_y = StringVar()
+    translate_z = StringVar()
     translate_label = Label(app,text='Translate (X,Y)', font=('bold', 12), pady=20)
     translate_label.grid(row=2,column=0,sticky=W)
     translate_x_entry = Entry(app, textvariable=translate_x)
     translate_x_entry.grid(row=2, column=1)
     translate_y_entry = Entry(app, textvariable=translate_y)
     translate_y_entry.grid(row=2, column=2)
+    translate_z_entry = Entry(app, textvariable=translate_z)
+    translate_z_entry.grid(row=2, column=3)
     
     #  Basic Scale and Scale
     scale_x = StringVar()
     scale_y = StringVar()
+    scale_z = StringVar()
     center_x = StringVar()
     center_y = StringVar()
+    center_z = StringVar()
     scale_label = Label(app,text='Scale (X,Y)', font=('bold', 12), pady=20)
     scale_label.grid(row=3,column=0,sticky=W)
     scale_x_entry = Entry(app, textvariable=scale_x)
     scale_x_entry.grid(row=3, column=1)
     scale_y_entry = Entry(app, textvariable=scale_y)
     scale_y_entry.grid(row=3, column=2)
+    scale_z_entry = Entry(app, textvariable=scale_z)
+    scale_z_entry.grid(row=3, column=3)
     
     scale_label = Label(app,text='Scale (X,Y)', font=('bold', 12), pady=20)
     scale_label.grid(row=3,column=0,sticky=W)
@@ -232,21 +287,20 @@ if __name__ == '__main__':
     scale_cx_entry.grid(row=4, column=1)
     scale_cy_entry = Entry(app, textvariable=center_y)
     scale_cy_entry.grid(row=4, column=2)
-    
+    scale_cz_entry = Entry(app, textvariable=center_z)
+    scale_cz_entry.grid(row=4, column=3)
+
     # Basic Rotate
     rotate = StringVar()
     rotate_center_x = StringVar()
     rotate_center_y = StringVar()
+    rotate_center_z = StringVar()
     
-    rotate_label = Label(app,text='Rotate(deg,Cx,Cy)', font=('bold', 12), pady=20)
+    rotate_label = Label(app,text='Rotate', font=('bold', 12), pady=20)
     rotate_label.grid(row=5,column=0,sticky=W)
     
     rotate_entry = Entry(app, textvariable=rotate)
     rotate_entry.grid(row=5, column=1)
-    rotate_cx_entry = Entry(app, textvariable=rotate_center_x)
-    rotate_cx_entry.grid(row=6, column=1)
-    rotate_cy_entry = Entry(app, textvariable=rotate_center_y)
-    rotate_cy_entry.grid(row=6, column=2)
     
     # displays data points
     text_box_label = Label(app, text='Points and Transforms')
@@ -271,21 +325,24 @@ if __name__ == '__main__':
 
     # translate button
     translate_button = Button(app, text='Translate',command=translate_func)
-    translate_button.grid(row=2,column=3)
+    translate_button.grid(row=2,column=4)
 
     # scale button
     basic_scale_button = Button(app,text='B.Scale', command=basic_scale_func)
-    basic_scale_button.grid(row=3,column=3)
+    basic_scale_button.grid(row=3,column=4)
 
     scale_button = Button(app,text='Scale', command=scale_func)
-    scale_button.grid(row=4,column=3)
+    scale_button.grid(row=4,column=4)
     
     # rotate button
-    basic_rotate_button = Button(app,text='B.Rotate', command=basic_rotate_func)
-    basic_rotate_button.grid(row=5,column=3)
-
-    rotate_button = Button(app,text='Rotate',command=rotate_func)
-    rotate_button.grid(row=6,column=3)
+    rotate_x = Button(app,text='Rotate (X)', command=rotate_x_func)
+    rotate_x.grid(row=5,column=4)
+    
+    rotate_y = Button(app,text='Rotate (Y)', command=rotate_y_func)
+    rotate_y.grid(row=5,column=5)
+    
+    rotate_z = Button(app,text='Rotate (Z)', command=rotate_z_func)
+    rotate_z.grid(row=5,column=6)
 
     # insert 
     insert_button = Button(app,text='Insert Line',command=insert_line)
@@ -297,20 +354,20 @@ if __name__ == '__main__':
     
     # add data files inputs
     input_x0 = StringVar()
-    input_x1 = StringVar()
     input_y0 = StringVar()
-    input_y1 = StringVar()
-    
+    input_z0 = StringVar()
+    input_index = StringVar()
+
     input_label = Label(app, text='Lines')
     input_label.grid(row=9,column=0)
     input_x0_box = Entry(app, textvariable=input_x0)
     input_x0_box.grid(row=9,column=1, sticky=W)
     input_y0_box = Entry(app, textvariable=input_y0)
     input_y0_box.grid(row=9,column=2, sticky=W)
-    input_x1_box = Entry(app, textvariable=input_x1)
-    input_x1_box.grid(row=9,column=3,sticky=W)
-    input_y1_box = Entry(app, textvariable=input_y1)
-    input_y1_box.grid(row=9,column=4,sticky=W)
+    input_z0_box = Entry(app, textvariable=input_z0)
+    input_z0_box.grid(row=9,column=3, sticky=W)
+    input_index = Entry(app, textvariable=input_index)
+    input_index.grid(row=9,column=4,sticky=W)
     
     # Display Image
     display_button = Button(app,text='Display', command=display_image)

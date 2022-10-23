@@ -171,7 +171,7 @@ def basic_rotate3y(original,theta):
                                 [0,0,0,1]])
     return numpy.matmul(original,trans_matrix)
 
-def basic_rotate3x(original,trans_matrix):
+def basic_rotate3x(original,theta):
     theta = float(theta)
     trans_matrix = numpy.array([[1,0,0,0],
                                 [0,numpy.cos(numpy.radians(theta)),numpy.sin((numpy.radians(theta))),0],
