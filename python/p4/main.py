@@ -256,9 +256,9 @@ def clean_array():
         temp_array = numpy.concatenate([temp_array,temp])
         temp_pointer = numpy.array([[row[3]]])
         pointers = numpy.concatenate([pointers, temp_pointer])
-
+        
     temp_array = numpy.delete(temp_array,0,axis=0)
-    
+    pointer = numpy.delete(temp_array,0,axis=0)
     # print(temp_array)
     return temp_array, pointers
 
@@ -266,6 +266,8 @@ def clean_array():
 def perspective_project():
     global lines_array
     global transforms
+    
+    # Change for testing
     # Viewport
     vp = [6,8,7.5]
     # Viewing Axis
@@ -287,11 +289,15 @@ def perspective_project():
         temp_array = numpy.concatenate([temp_array,final_array])
 
     temp_array = numpy.delete(temp_array,0,axis=0)
-    print(temp_array)
+    pointer = numpy.delete(pointer,0,axis=0)
+    # print(temp_array)
+    # print(pointer)
     return temp_array, pointer
 
 def display_image():
     global lines_array
+    
+    # Change for Vertex
     vcx = 511.5
     vcy = 511.5
     vsy = 511.5
@@ -300,8 +306,7 @@ def display_image():
     # Image window
     img=Image.new('L',(1800,1000))
     points, direction = perspective_project()
-    # print(points)
-    # print(direction)
+    
     # create image
     i = 0
     x0 = 0
@@ -311,16 +316,15 @@ def display_image():
     # print(direction)
     for cord in points:
         # second x and y
+        
         xs = points[int(direction[i])][0]
         ys = points[int(direction[i])][1]
         zs = points[int(direction[i])][2]
-        print(cord[0],cord[2],cord[1])
-        print(xs,ys,zs)
         if (-cord[2] <= cord[0] <= cord[2]) and (-cord[2] <= cord[1] <= cord[2]):
             x0 = cord[0]/cord[2] * vsx + vcx
             y0 = cord[1]/cord[2] * vsy + vcy
-            x0 = int(x0)
-            y0 = int(y0)
+            x0 = round(x0)
+            y0 = round(y0)
             # print(x0,y0)
             # draw(x0,y0,x0,y0,img)
             # if it should draw to the next point
@@ -328,14 +332,17 @@ def display_image():
                 x1 = xs/zs * vsx + vcx
                 y1 = ys/zs * vsy + vcy
                 
-                x1 = int(x0)
-                y1 = int(y0)
-                # print(x0,y0,x1,y1)
+                x1 = round(x1)
+                y1 = round(y1)
+                
+                print(f'Direction:{direction[i]}')
+                print(x0,y0)
+                
                 draw(x0,y0,x1,y1,img)
-        # print(x0,y0,x1,y1)
         i = i + 1
             
     # Display image
+    img = img.transpose(method=Image.FLIP_TOP_BOTTOM)
     img.show()
     
     print('display')
