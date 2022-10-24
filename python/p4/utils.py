@@ -178,3 +178,6 @@ def basic_rotate3x(original,theta):
                                 [0,numpy.sin(-numpy.radians(theta)),numpy.cos(numpy.radians(theta)),0],
                                 [0,0,0,1]])
     return numpy.matmul(original,trans_matrix)
+
+def create_identity_4():
+    return numpy.array([[1, 0, 0, 0],[0, 1, 0, 0], [0, 0, 1, 0],[0, 0, 0, 1]])

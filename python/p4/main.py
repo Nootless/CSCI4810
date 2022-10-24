@@ -3,24 +3,16 @@ from tkinter import filedialog
 from PIL import Image
 from utils import *
 import numpy
+import math
 
 # global declares
 global lines_array 
 global transforms 
 lines_array = []
-transforms = numpy.array([[1, 0, 0, 0],[0, 1, 0, 0], [0, 0, 1, 0],[0, 0, 0, 1]])
-
+transforms = create_identity_4()
 # Constants
 N = 1000
 
-# Viewport
-vp = [6,8,7.5]
-# Viewing Axis
-Z = 7.5
-# screen size
-S = 15
-# screen distance
-D = 60
 
 # create App
 # comes from https://www.youtube.com/watch?v=ELkaEpN29PU
@@ -220,25 +212,133 @@ def apply_transform():
     text_box_info.delete('1.0','end')
     text_box_info.insert(END,f'Length:{len(lines_array)}')
     
+
+
+def compute_eye(vp,D,S):
+    # compute commonly used terms
+    mag = (vp[0]**2 + vp[1]**2)**.5
+    z_mag = (((vp[2]**2) + (vp[0]**2 + vp[1]**2))**.5)
+    # t1 * t2 * t3 * t4 * t5
+    t1 = numpy.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[-vp[0],-vp[1],-vp[2],1]])
+    t2 = numpy.array([[1,0,0,0],[0,0,-1,0],[0,1,0,0],[0,0,0,1]])
+    t3 = numpy.array([[-(vp[1]/(mag)), 0, (vp[0]/(mag)), 0],
+          [0, 1, 0, 0],
+          [-(vp[0]/(mag)), 0, -(vp[1]/(mag)),0],
+          [0, 0, 0, 1]])
+    t4 = numpy.array([[1, 0, 0, 0],
+          [0, (mag)/z_mag, (vp[2]/z_mag), 0],
+          [0, -(vp[2]/z_mag), (mag)/z_mag, 0],
+          [0, 0, 0, 1]])
+    t5 = numpy.array([[1, 0, 0, 0],
+          [0, 1, 0, 0],
+          [0, 0, -1, 0],
+          [0, 0, 0, 1]])
+    # print(f'{t1}\n{t2}\n{t3}\n{t4}\n{t5}')
+    V = numpy.matmul(t1,t2)
+    V = numpy.matmul(V,t3)
+    V = numpy.matmul(V,t4)
+    V = numpy.matmul(V,t5)
+    
+    change = numpy.array([[D/S, 0, 0, 0],[0, D/S, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+    eye_transform = numpy.matmul(V,change)
+    # print(eye_transform)
+
+    return eye_transform
+
+# removes data from array with points
+def clean_array():
+    global lines_array
+
+    temp_array = numpy.empty([1,3])
+    pointers = numpy.empty([1,1])
+    for row in lines_array:
+        temp = numpy.array([[row[0],row[1],row[2]]])
+        temp_array = numpy.concatenate([temp_array,temp])
+        temp_pointer = numpy.array([[row[3]]])
+        pointers = numpy.concatenate([pointers, temp_pointer])
+
+    temp_array = numpy.delete(temp_array,0,axis=0)
+    
+    # print(temp_array)
+    return temp_array, pointers
+
+
+def perspective_project():
+    global lines_array
+    global transforms
+    # Viewport
+    vp = [6,8,7.5]
+    # Viewing Axis
+    Z = vp[2]
+    # screen size
+    S = 15
+    # screen distance
+    D = 60
+    
+    eye = compute_eye(vp, D, S)
+    points, pointer = clean_array()
+    temp_array = numpy.empty([1,3])
+
+    # row 
+    for row in points:
+        temp = [row[0],row[1],row[2],1]
+        temp = numpy.matmul(temp,eye)
+        final_array = numpy.array([[temp[0],temp[1],temp[2]]])
+        temp_array = numpy.concatenate([temp_array,final_array])
+
+    temp_array = numpy.delete(temp_array,0,axis=0)
+    print(temp_array)
+    return temp_array, pointer
+
 def display_image():
     global lines_array
-    # Image window
-    img=Image.new('L',(700,700))
+    vcx = 511.5
+    vcy = 511.5
+    vsy = 511.5
+    vsx = 511.5
 
+    # Image window
+    img=Image.new('L',(1800,1000))
+    points, direction = perspective_project()
+    # print(points)
+    # print(direction)
     # create image
-    for cord in lines_array:
-        x0 = int(cord[0])
-        y0 = int(cord[1])
-        x1 = int(cord[2])
-        y1 = int(cord[3])
-        draw(x0,y0,x1,y1,img)
+    i = 0
+    x0 = 0
+    y0 = 0
+    x1 = 0
+    y1 = 0
+    # print(direction)
+    for cord in points:
+        # second x and y
+        xs = points[int(direction[i])][0]
+        ys = points[int(direction[i])][1]
+        zs = points[int(direction[i])][2]
+        print(cord[0],cord[2],cord[1])
+        print(xs,ys,zs)
+        if (-cord[2] <= cord[0] <= cord[2]) and (-cord[2] <= cord[1] <= cord[2]):
+            x0 = cord[0]/cord[2] * vsx + vcx
+            y0 = cord[1]/cord[2] * vsy + vcy
+            x0 = int(x0)
+            y0 = int(y0)
+            # print(x0,y0)
+            # draw(x0,y0,x0,y0,img)
+            # if it should draw to the next point
+            if (-zs <= xs <= zs) and (-zs <= ys <= zs):
+                x1 = xs/zs * vsx + vcx
+                y1 = ys/zs * vsy + vcy
+                
+                x1 = int(x0)
+                y1 = int(y0)
+                # print(x0,y0,x1,y1)
+                draw(x0,y0,x1,y1,img)
+        # print(x0,y0,x1,y1)
+        i = i + 1
+            
     # Display image
     img.show()
     
     print('display')
-
-def display3d_image():
-    return NotImplementedError()
 
 if __name__ == '__main__':
     # App Init
