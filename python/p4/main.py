@@ -54,6 +54,7 @@ def translate_func():
     transforms = basic_trans3(transforms,x_trans,y_trans,z_trans)
     transform_text_box.delete('1.0','end')
     transform_text_box.insert(END,transforms)
+    print(transforms)
     print('translate')
 
 
@@ -217,7 +218,7 @@ def apply_transform():
 def compute_eye(vp,D,S):
     # compute commonly used terms
     mag = (vp[0]**2 + vp[1]**2)**.5
-    z_mag = (((vp[2]**2) + (vp[0]**2 + vp[1]**2))**.5)
+    z_mag = (((vp[2]**2) + mag**2)**.5)
     # t1 * t2 * t3 * t4 * t5
     t1 = numpy.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[-vp[0],-vp[1],-vp[2],1]])
     t2 = numpy.array([[1,0,0,0],[0,0,-1,0],[0,1,0,0],[0,0,0,1]])
@@ -242,7 +243,6 @@ def compute_eye(vp,D,S):
     change = numpy.array([[D/S, 0, 0, 0],[0, D/S, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     eye_transform = numpy.matmul(V,change)
     # print(eye_transform)
-
     return eye_transform
 
 # removes data from array with points
@@ -251,6 +251,7 @@ def clean_array():
 
     temp_array = numpy.empty([1,3])
     pointers = numpy.empty([1,1])
+
     for row in lines_array:
         temp = numpy.array([[row[0],row[1],row[2]]])
         temp_array = numpy.concatenate([temp_array,temp])
@@ -271,20 +272,22 @@ def perspective_project():
     # Viewport
     vp = [6,8,7.5]
     # Viewing Axis
-    Z = vp[2]
+    Z = 7.5
     # screen size
     S = 15
     # screen distance
     D = 60
     
     eye = compute_eye(vp, D, S)
+    # print(eye)
     points, pointer = clean_array()
     temp_array = numpy.empty([1,3])
 
-    # row 
+    # used to create new array that has been transformed into clipping coordinate system
     for row in points:
         temp = [row[0],row[1],row[2],1]
         temp = numpy.matmul(temp,eye)
+        # print(temp)
         final_array = numpy.array([[temp[0],temp[1],temp[2]]])
         temp_array = numpy.concatenate([temp_array,final_array])
 
@@ -304,7 +307,7 @@ def display_image():
     vsx = 511.5
 
     # Image window
-    img=Image.new('L',(1800,1000))
+    img=Image.new('L',(1024,1024))
     points, direction = perspective_project()
     
     # create image
@@ -314,6 +317,7 @@ def display_image():
     x1 = 0
     y1 = 0
     # print(direction)
+    # print(points)
     for cord in points:
         # second x and y
         
@@ -335,13 +339,14 @@ def display_image():
                 x1 = round(x1)
                 y1 = round(y1)
                 
-                print(f'Direction:{direction[i]}')
-                print(x0,y0)
+                # print(f'Direction:{direction[i]}')
+                # print(x1,y1)
                 
                 draw(x0,y0,x1,y1,img)
         i = i + 1
             
     # Display image
+    # img = img.transpose(method=Image.FLIP_LEFT_RIGHT)
     img = img.transpose(method=Image.FLIP_TOP_BOTTOM)
     img.show()
     
