@@ -203,7 +203,7 @@ def apply_transform():
     text_box_info.insert(END,f'Length:{len(lines_array)}')
 
 def compute_eye():
-    # constants
+    # constants of camera and screen
     x = 6
     y = 8
     z = 7.5
